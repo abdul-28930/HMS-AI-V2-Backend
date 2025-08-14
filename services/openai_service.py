@@ -19,7 +19,7 @@ class OpenAIService:
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=100
+                max_tokens=500
             )
             return response.choices[0].message.content.strip()
         except Exception:
@@ -42,7 +42,7 @@ class OpenAIService:
                     {"role": "system", "content": "You are a hotel analytics expert providing business insights."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=200
+                max_tokens=1000
             )
             return response.choices[0].message.content.strip()
         except Exception:
@@ -53,7 +53,7 @@ class OpenAIService:
             response = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=messages,
-                max_tokens=200
+                max_tokens=2000
             )
             return response.choices[0].message.content.strip()
         except Exception:

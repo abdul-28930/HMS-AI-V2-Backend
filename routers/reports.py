@@ -20,10 +20,10 @@ class ChatMessage(BaseModel):
     content: str
 
 class QueryRequest(BaseModel):
-    question: str
+    message: str
     date_range: Optional[str] = "last_30_days"
     history: List[ChatMessage] = []
-    user_session: Optional[str] = "default_session"
+    userSession: Optional[str] = "default_session"
 
 class AnalyticsResponse(BaseModel):
     answer: str
@@ -82,14 +82,14 @@ async def analyze_query(request: QueryRequest):
 @router.post("/chat", response_model=AnalyticsResponse)
 async def chat(request: QueryRequest):
     # Get user session from request
-    user_session = request.user_session or "default_session"
+    user_session = request.userSession or "default_session"
     
     # Load chat history from database
     history_result = supabase_service.get_chat_history(user_session)
     db_history = [{'role': h['role'], 'content': h['message']} for h in history_result.data or []]
     
     # Save user message to database
-    supabase_service.save_chat_message(user_session, 'user', request.question)
+    supabase_service.save_chat_message(user_session, 'user', request.message)
     
     # Get ALL actual data from database
     all_data = supabase_service.get_all_data_for_ai()
@@ -193,14 +193,14 @@ async def chat(request: QueryRequest):
     
     Hotel Data: {data_context}
     
-    User Question: {request.question}
+    User Question: {request.message}
     
     Provide specific numbers and detailed answers using the actual data provided.
     Answer:"""
     
     # Call OpenAI with complete context
     answer = await openai_service.chat_completion([
-        {"role": "system", "content": "You have complete access to all hotel data including financial records, bookings, rooms, staff, and guest information. Always provide specific numbers and calculations from the actual data."},
+        {"role": "system", "content": "You have complete access to all hotel data including financial records, bookings, rooms, staff, and guest information. Always provide specific numbers and calculations from the actual data. Use simple plain text math format like (2/5 * 100 = 40%) instead of LaTeX or special formatting."},
         {"role": "user", "content": prompt}
     ])
     
