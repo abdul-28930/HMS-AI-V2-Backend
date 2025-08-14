@@ -20,9 +20,13 @@ allowed_origins = [
 ]
 
 # In production, allow specific origins from environment variable
-if os.getenv("ENVIRONMENT") == "production" and os.getenv("ALLOWED_ORIGINS"):
-    production_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
-    allowed_origins.extend([origin.strip() for origin in production_origins])
+if os.getenv("ENVIRONMENT") == "production":
+    if os.getenv("ALLOWED_ORIGINS"):
+        production_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+        allowed_origins.extend([origin.strip() for origin in production_origins])
+    else:
+        # Temporary fix: allow all origins in production if no specific origins set
+        allowed_origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
