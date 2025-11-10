@@ -22,32 +22,32 @@ class SupabaseService:
     def get_bookings_with_guests(self):
         return self.client.table('bookings').select('*, guests(name)').execute()
 
-    def get_rooms_with_details(self):
-        return self.client.table('rooms').select('number, type, status').execute()
+    def get_rooms_with_details(self, branch_id):
+        return self.client.table('rooms').select('number, status').eq('branch_id', branch_id).execute()
     
-    def get_all_data_for_ai(self):
-        """Get ALL actual data for AI - every table, every column"""
+    def get_all_data_for_ai(self, branch_id):
+        """Get ALL actual data for AI - every table, every column - FOR SPECIFIC BRANCH"""
         try:
-            # Get all raw data with joins
+            # Get all raw data with joins - FILTERED BY BRANCH
             bookings = self.client.table('bookings').select('''
                 *, 
                 guests(name, email, phone, address, id_type, id_number),
                 staff(name, role, department, email, phone),
-                rooms(number, type, floor, capacity, price, status, amenities)
-            ''').execute().data or []
+                rooms(number, floor, capacity, price, status, amenities)
+            ''').eq('branch_id', branch_id).execute().data or []
             
             reservations = self.client.table('reservations').select('''
                 *, 
                 guests(name, email, phone, address, id_type, id_number),
                 staff(name, role, department, email, phone),
-                rooms(number, type, floor, capacity, price, status, amenities)
-            ''').execute().data or []
+                rooms(number, floor, capacity, price, status, amenities)
+            ''').eq('branch_id', branch_id).execute().data or []
             
-            rooms = self.client.table('rooms').select('*').execute().data or []
-            staff = self.client.table('staff').select('*').execute().data or []
+            rooms = self.client.table('rooms').select('*').eq('branch_id', branch_id).execute().data or []
+            staff = self.client.table('staff').select('*').eq('branch_id', branch_id).execute().data or []
             guests = self.client.table('guests').select('*').execute().data or []
-            housekeeping = self.client.table('housekeeping_tasks').select('*, staff(name, role), rooms(number, type)').execute().data or []
-            staff_logs = self.client.table('staff_logs').select('*, staff(name, role)').execute().data or []
+            housekeeping = self.client.table('housekeeping_tasks').select('*').eq('branch_id', branch_id).execute().data or []
+            staff_logs = self.client.table('staff_logs').select('*, staff(name, role)').eq('branch_id', branch_id).execute().data or []
             hotels = self.client.table('hotels').select('*').execute().data or []
             settings = self.client.table('settings').select('*').execute().data or []
             
